@@ -1,0 +1,9 @@
+#admin with all rights
+
+username = admin
+password = admin123
+
+#admin not superuser
+
+username = john
+password = john123
