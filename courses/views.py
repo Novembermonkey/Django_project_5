@@ -3,12 +3,15 @@ from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-
+from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import Subject, Course, Comment
 from .permissions import *
-from .serializers import SubjectSerializer, CourseSerializer, CommentSerializer, RegisterSerializer, LoginSerializer
+from .serializers import SubjectSerializer, CourseSerializer, CommentSerializer, RegisterSerializer, LoginSerializer, \
+    CustomTokenObtainSerializer
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
 # Create your views here.
 
 from rest_framework.viewsets import ModelViewSet
@@ -17,25 +20,29 @@ from rest_framework.viewsets import ModelViewSet
 class SubjectViewSet(ModelViewSet):
     queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
-    permission_classes = [EvenYearsOnly]
+    permission_classes = []
+    authentication_classes = [JWTAuthentication]
 
 
 class CourseViewSet(ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes = [SuperUserOnly]
+    permission_classes = []
+    authentication_classes = [JWTAuthentication]
 
 
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [UpdateOnly]
+    permission_classes = []
+    authentication_classes = [JWTAuthentication]
 
 
 class PremiumCourses(ModelViewSet):
     queryset = Course.objects.filter(is_premium=True)
     serializer_class = CourseSerializer
     permission_classes = [CanReadPremium]
+    authentication_classes = [JWTAuthentication]
 
 class RegisterView(CreateAPIView):
     queryset = User.objects.all()
@@ -68,3 +75,17 @@ class LogoutView(APIView):
     def post(self, request):
         request.user.auth_token.delete()
         return Response({'detail': 'Logged out successfully'}, status=status.HTTP_200_OK)
+
+
+class JWTLogOutView(APIView):
+    def post(self, request):
+        try:
+            refresh_token = request.data['refresh']
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({'detail': 'Logged out successfully'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainSerializer

@@ -19,9 +19,10 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from config import settings
 from courses.tokens import CustomAuthToken
+from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-token-auth/', CustomAuthToken.as_view(), name='api_token_auth'),
-    path('api/', include('courses.urls', namespace='courses')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('courses-api/', include('courses.urls', namespace='courses')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + debug_toolbar_urls()

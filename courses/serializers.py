@@ -1,4 +1,8 @@
+from tkinter.tix import Select
+
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 from courses.models import Subject, Course, Comment
 from django.db.models import Avg
 from django.contrib.auth.models import User
@@ -69,3 +73,23 @@ class LoginSerializer(serializers.Serializer):
             data['user'] = user
             return data
         raise serializers.ValidationError("Invalid credentials")
+
+
+
+class CustomTokenObtainSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        data['user'] = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'is_staff': self.user.is_staff,
+        }
+
+        return data
