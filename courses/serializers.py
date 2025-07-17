@@ -9,15 +9,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
 
-class SubjectSerializer(serializers.ModelSerializer):
-    courses = serializers.SerializerMethodField()
 
-    class Meta:
-        model = Subject
-        exclude = ('slug',)
 
-    def get_courses(self, obj):
-        return list(obj.courses.values_list('title', flat=True))
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -27,16 +20,23 @@ class CourseSerializer(serializers.ModelSerializer):
         slug_field = 'slug',
         read_only = True
     )
-    rating = serializers.SerializerMethodField()
+    avg_rating = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Course
         fields = '__all__'
 
-    def get_rating(self, obj):
-        avg = obj.comments.aggregate(avg_rating=Avg('rating'))['avg_rating']
-        return round(avg, 2) if avg is not None else 0
+class CourseTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ['title']
 
+class SubjectSerializer(serializers.ModelSerializer):
+    courses = CourseTitleSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Subject
+        exclude = ('slug',)
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:

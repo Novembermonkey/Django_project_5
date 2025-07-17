@@ -44,10 +44,10 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
-    @property
-    def avg_rating(self):
-        avg = self.comments.aggregate(avg=Round(Avg('rating'), precision=2))['avg']
-        return avg
+    # @property
+    # def avg_rating(self):
+    #     avg = self.comments.aggregate(avg=Round(Avg('rating'), precision=2))['avg']
+    #     return avg
 
 
 class Module(models.Model):
